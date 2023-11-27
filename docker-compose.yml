@@ -29,7 +29,7 @@ services:
       - 9000:9000
     volumes:
       # host_dir:container_dir
-      - ./data/ch:/var/lib/clickhouse
+      - chdata:/var/lib/clickhouse
     restart: unless-stopped
   mongodb:
     image: mongo
