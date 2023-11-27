@@ -1,0 +1,60 @@
+version: '3.8'
+volumes:
+  # clickhouse persistent volume
+  chdata: {}
+  # postgresql persistent volume
+  pgdata: {}
+  # mongodb persistent volume
+  mongodata: {}
+services:
+  # STORAGES
+  postgresql:
+    build: ./postgresql
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+    ports:
+      # host_port:container_port
+      - 5432:5432
+    restart: unless-stopped
+    volumes:
+      # host_dir:container_dir
+      - pgdata:/var/lib/postgresql/data
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.2.3.17-alpine
+    ports:
+      # web interface: host_port:container_port
+      - 8123:8123
+      # native client: host_port:container_port
+      - 9000:9000
+    volumes:
+      # host_dir:container_dir
+      - ./data/ch:/var/lib/clickhouse
+    restart: unless-stopped
+  mongodb:
+    image: mongo
+    ports:
+      # host_port:container_port
+      - 27017:27017
+    restart: unless-stopped
+    volumes:
+      # host_dir:container_dir
+      - mongodata:/data/db
+  # INTEGRATIONS
+  etcd:
+    image: bitnami/etcd
+    ports:
+      # host_port:container_port
+      - 2379:2379
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+    restart: unless-stopped
+  rabbitmq:
+    image: rabbitmq:3-management
+    # host_port:container_port
+    ports:
+      # management UI host_port:container_port
+      - 15672:15672
+      # rabbitmq host_port:container_port
+      - 5672:5672
+    restart: unless-stopped
